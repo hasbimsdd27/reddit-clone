@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { MikroORM } from "@mikro-orm/core";
 import { __prod__ } from "./constants";
 import microConfig from "./mikro-orm.config";
@@ -9,6 +10,7 @@ import {
   ApolloServerPluginLandingPageGraphQLPlayground,
   ApolloServerPluginLandingPageDisabled,
 } from "apollo-server-core";
+import { PostResolver } from "./resolvers/post";
 
 const main = async () => {
   const orm = await MikroORM.init(microConfig);
@@ -18,7 +20,7 @@ const main = async () => {
 
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
-      resolvers: [HelloResolvers],
+      resolvers: [HelloResolvers, PostResolver],
       validate: false,
     }),
     plugins: [
@@ -26,6 +28,7 @@ const main = async () => {
         ? ApolloServerPluginLandingPageDisabled()
         : ApolloServerPluginLandingPageGraphQLPlayground(),
     ],
+    context: () => ({ em: orm.em }),
   });
   await apolloServer.start();
   apolloServer.applyMiddleware({ app });
